@@ -1,0 +1,14 @@
+clear;
+clc;clf;
+x=input('enter the input sequence value x(n)');
+k=input('Enter the no of zeros to be padded');
+N=length(x);
+x_pad=[x,zeros(1,k)];
+N1=length(x_pad);
+f=0:N-1;
+f1=0:N1-1;
+ori=abs(fft(x));
+new=abs(fft(x_pad));
+figure(1);
+subplot(211);plot2d3(f,ori);
+subplot(212);plot2d3(f1,new);
