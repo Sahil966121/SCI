@@ -1,1 +1,78 @@
+1. To find linear convolution of two causal sequences
+//Linear convolution of given sequences using C
+language #include<stdio.h>
+#include<math.h>
+main(){
+float h[4]={2,2,2,2};float x[4]={1,2,3,4};
+float y[10]; int xlen=4; int hlen=4;
+int len;
+int N=xlen+hlen-1; //Length of linear convolution
+int k,n;
+for(n=0;n<N;n++){
+y[n]=0;
+for(k=0;k<=n;k++){
+if(((n-k)<hlen)&(k<xlen))
+y[n]=y[n]+x[k]*h[n-k];
+}
+printf("%f\n",y[n]);
+}
+}
 
+
+
+
+// This Program Computes N point circular convolution of x1(n) and x2(n)
+// Max(L1,L2) <= N < L1+L2-1
+// ARRAY LENGTH of x1 and x2 should be N always
+# include<stdio.h>
+# include<math.h>
+# define N 8
+float x1[N]={1,2,3,4,5};
+float x2[N]={5,4,3,2,1};
+float x3[N];
+main(){
+int k,n,i;
+for(n=0;n<N;n++)
+{ //outer loop for y[n] array
+x3[n]=0;
+for(k=0;k<N;k++)
+{ //inner loop for computing each y[n] point
+i=(n-k)%N; //compute the index modulo N
+if(i<0) i=i+N; //if index is <0, say x[-1], then convert to x[N-1]
+x3[n]=x3[n]+x2[k]*x1[i]; //compute output
+} //end of inner for loop
+printf("%f\t",x3[n]);
+}
+//end of outer for loop
+} //end of main
+
+
+
+
+
+
+
+
+
+
+
+Compute N point DFT of a given sequence
+#include <stdio.h>
+#include <math.h>
+float x[4]={1,3,2,5};
+float y[16];
+float z[8]={0,0,0,0,0,0,0,0}; // To store the magnitude of DFT
+main(){
+float w;
+int n,k, N=8,xlen=4,i;
+for(k=0,i=0;i<N;i++,k=k+2){
+y[k]=0; y[k+1]=0; //initialize real & imag parts
+for(n=0;n<xlen;n++){
+w=-2*3.1416*i*n/N; //careful about minus sign
+y[k]=y[k]+x[n]*cos(w);
+y[k+1]=y[k+1]+x[n]*sin(w);
+}
+z[i]=sqrt(y[k]*y[k]+y[k+1]*y[k+1]);
+printf(" y(%d)= %f+j(%f) \n\n |y(%d)|=
+%f\n\n",i,y[k],y[k+1],i,z[i]); }
+}
