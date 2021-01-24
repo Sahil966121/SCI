@@ -1,0 +1,213 @@
+Design a simple notch filter to stop a disturbance with
+frequency F_0=1.25 kHz and a sampling frequency F_s=10 kHz.
+Verify the result using SCILAB.
+clear;
+close;
+clc;
+
+//Read the given ECG signal
+fs=360;
+[fd,SST,Sheetname,Sheetpos]=xls_open('F:\UG\sem odd 2020-21\Data for
+Assignment\ECG.xls');
+[signal,index]=xls_read(fd,Sheetpos(1));
+mclose(fd);
+
+//Plot the signal in the frequency domain and observe the power line interefnce of 60
+Hz and its harmonics at 120 Hz and 180 Hz.
+signal_fft=fft(signal);
+k=0:length(signal_fft)-1;
+f=k*fs/length(signal_fft);
+figure;
+plot(f,20*log10(abs(signal_fft)));
+xtitle('Frequency Domain Input Signal','Frequency in Hz','Gain in dB');
+
+//Design notch filter to eliminate power line interference of 60 Hz.
+//Place the poles
+w=2*%pi*60/fs;
+radius=0.98;
+
+//Filter Coefficients
+num=[1 -2*cos(w) 1];
+den=[1 -2*radius*cos(w) radius^2];
+
+//Plot the magnuitude response of the filter
+
+V Sem E&C DSP Lab (5RECL1)
+
+Dept. of E&C - 38 - SIT, Tumkur
+[hz]=frmag(num,den,length(f)/2);
+figure;
+plot(f(1:length(f)/2),hz);
+xtitle('Magnitude Response of the Notch Filter','Frequency in Hz','Gain');
+
+//Filter the signal and observe the absence of 60 Hz frequency
+filter_op=filter(num,den,signal);
+filter_fft=fft(filter_op);
+
+figure;
+plot(f,20*log10(abs(filter_fft)));
+xtitle('Frequency domain of the output signal','Frequency in Hz','Gain in dB');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Design a digital resonator that resonates at 1000 Hz. Assume
+Fs=8000 Hz. Verify the result using SCILAB.
+clear;clc;close;
+fr=200;Fs=1000;
+wr=2*%pi*fr/Fs;
+r=0.98;
+freq_points=1024;
+
+num=[1];
+den=[1 -2*r*cos(wr) r^2];
+hz=frmag(num,den,freq_points/2);
+figure;
+k=0:freq_points-1;
+f=k*Fs/freq_points;
+
+figure;
+plot(f(1:length(f)/2),hz);
+xtitle('Magnitude Response of the Resonator','Frequency in Hz','Gain');
+
+V Sem E&C DSP Lab (5RECL1)
+
+Dept. of E&C - 40 - SIT, Tumkur
+15. Design a comb filter that suppresses 60 Hz AC frequency
+component and its
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Design a comb filter that suppresses 60 Hz AC frequency
+component and its harmonics from the given ECG signal. Assume
+Fs=360 Hz. Verify the result using SCILAB.
+clear;clc;close;
+
+//Read the given ECG signal
+fs=360;
+[fd,SST,Sheetname,Sheetpos]=xls_open('F:\UG\sem odd 2020-21\Data for
+Assignment\ECG.xls');
+[signal,index]=xls_read(fd,Sheetpos(1));
+mclose(fd);
+figure;
+plot(signal);
+xtitle('Time Domain Input');
+
+//Plot the signal in the frequency domain and observe the power line interefnce of 60
+Hz and its harmonics at 120 Hz and 180 Hz.
+signal_fft=fft(signal);
+k=0:length(signal_fft)-1;
+f=k*fs/length(signal_fft);
+
+figure;
+plot(f,20*log10(abs(signal_fft)));
+xtitle('Frequency Domain Input Signal','Frequency in Hz','Gain in dB');
+
+//Moving average filter of length M
+freq_points=1024;
+fundamental=60;
+M=(fs/fundamental);
+w=2*%pi*f/fs;
+num=ones(1,M);
+den=[M];
+hz=frmag(num,den,freq_points/2);
+figure;
+k=0:freq_points-1;
+f=k*fs/freq_points;
+
+figure;
+plot(f(1:length(f)/2),hz);
+xtitle('Magnitude Response of the Notch Filter','Frequency in Hz','Gain');
+
+//Filter the signal and observe the absence of 60 Hz frequency and its harmonics
+filter_op=filter(num,den,signal);
+filter_fft=fft(filter_op);
+filter_fft(find(filter_fft==0))=0.001; //To ensure that none of the fft output points are
+zero to take log
+
+figure;
+plot(filter_op);
+xtitle('Time Domain output');
+k=0:length(signal_fft)-1;
+f=k*fs/length(signal_fft);
+figure;
+plot(f,20*log10(abs(filter_fft)));
+xtitle('Frequency domain of the output signal','Frequency in Hz','Gain in dB');
+clear;
+clc;
+close;
+// DTMF Generation
+row_number=input('Row Number');
+column_number=input('Column Number');
+fr=[697 770 852 941];
+fc=[1209 1336 1477 1633];
+fs=8000;
+N=0.04*8000;//40 ms duration
+f1=fr(row_number);
+f2=fc(column_number);
+tm=0:1/fs:(N-1)/fs;
+x1=cos(2*%pi*f1*tm);
+x2=cos(2*%pi*f2*tm);
+x=x1+x2;
+x_dft=abs(fft(x));
+freq_axis=(0:N-1)*fs/N;
+figure;
+plot(freq_axis,x_dft);
+//DTMF Detector
+fr=[697 770 852 941];
+fc=[1209 1336 1477 1633];
+// Calculate the bin numbers for these frequencies
+kr=ceil(fr*N/fs);
+kc=ceil(fc*N/fs);
+//To find WN_k (coefficient for first order Goertzel filter)
+WN_kr=exp(%i*2*%pi*kr/N);
+WN_kc=exp(%i*2*%pi*kc/N);
+//Filteing Operation
+for i=1:length(kr)
+yk_n(1)=x(1);
+for n=2:length(x)
+yk_n(n)=x(n)+WN_kr(i)*(yk_n(n-1));
+end
+geortzel_op_kr(i)=abs(WN_kr(i)*yk_n(N));
+end
+for i=1:length(kc)
+yk_n(1)=x(1);
+for n=2:length(x)
+yk_n(n)=x(n)+WN_kc(i)*(yk_n(n-1));
+end
+geortzel_op_kc(i)=abs(WN_kc(i)*yk_n(N));
+end
+row=find(geortzel_op_kr==max(geortzel_op_kr));
+clm=find(geortzel_op_kc==max(geortzel_op_kc));
+disp([row clm]);
