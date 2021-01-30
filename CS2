@@ -1,0 +1,186 @@
+// Binary Phase Shift Keying Modulation and Coherent Demodulation
+//The Code is written with reference to the block diagram of BPSK
+generation and detection of BPSK as given ine symon Haykin text book
+//Works for 4 bit binary data
+clear ;
+clc ;
+close ;
+fc =2000;// Frequency of the carrier
+Tc=1/fc;
+Tb=2*Tc;
+Fs=20000;//Sampling Frequency
+//Generate carrier signal with 8 cycles
+carrier_samples=Tc*Fs*8;
+t = 0:1/Fs:(carrier_samples-1)/Fs;
+c_t = cos (2* %pi *fc*t);
+t = 0:1/Fs:(length(c_t)-1)/Fs;
+phi_t=c_t.*sqrt(2/Tb);
+figure;
+plot(t,c_t);
+//To generate the NRZ polar waveform for 4 bit data
+bin_data = [1 0 1 0];
+Samples_in_1bit=Tb*Fs;
+data=[];
+for j=1:length(bin_data)
+ if bin_data(j)==0
+ data=[data -1*ones(1,Samples_in_1bit)];
+else
+ data=[data ones(1,Samples_in_1bit)];
+end
+end
+bpsk=data.*phi_t;
+tplot=0:1/Fs:(length(data)-1)/Fs;
+figure;
+subplot(211),plot2d3(tplot,data);
+subplot(212),plot(tplot,bpsk);
+//Demodulation
+white_noise=rand(1,length(data));
+r=rand(white_noise,"normal");
+received_signal=bpsk+r;
+n=1;
+for j=1:Samples_in_1bit:length(received_signal)
+ temp(n)=received_signal(j:j+Samples_in_1bit1)*phi_t(j:j+Samples_in_1bit-1)';
+ if temp(n)>=0
+ decoded_data(n)=1
+ else
+ decoded_data(n)=0;
+ end
+ n=n+1;
+end
+disp(decoded_data);
+
+
+
+
+//Delta Modulation
+clc;
+clear;
+close;
+a=1;
+fm=100;
+fs=10000;
+t=0:1/fs:1/fm;
+x=a*sin(2*%pi*fm*t);
+step_size=0.05;
+xq(1)=0;
+err(1)=x(1);
+b(1)=0;
+for n=2:length(x)
+ err(n)=x(n)-xq(n-1);
+ if err(n)>=0
+ errorq(n)=step_size;
+ b(n)=1;
+ else
+ errorq(n)=-step_size;
+ b(n)=0;
+ end
+ xq(n)=xq(n-1)+errorq(n);
+end
+figure
+plot(t,x,'g');
+plot2d2(t,xq);
+encoded_data=b;
+disp(encoded_data);
+
+
+
+
+
+
+
+
+
+
+
+
+//Linear Block Codes
+//Generate the (7,4) Hamming codeword for the given message and
+decode the received codeword with single bit error.
+//Data to be specified: Parity Matrix (4x3), Message bit pattern (4
+bits) and Received Vector (7 bits)
+//This code can correct 1 bit error
+clear;
+clc;
+close;
+//Parity Matrix
+P=[1 1 0;0 1 1;1 1 1;1 0 1];
+Message=[1 0 1 0];
+Recd_vector=[0 0 1 1 1 1 0];
+//Syndrome Table
+syndrome_table=[0 0 0
+ 1 0 0
+0 1 0
+0 0 1
+1 1 0
+0 1 1
+1 1 1
+1 0 1];
+k=4;
+n=7;
+Ik=eye(k,k);
+Inminusk=eye((n-k),(n-k));
+G=[P Ik];
+H=[Inminusk P'];
+HT=H';
+for l=1:n
+ temp(:,l)=Message'.*G(:,l);
+end
+codeword=zeros(1,7);
+for l=1:k
+ codeword=bitxor(codeword,temp(l,:));
+end
+disp(codeword);
+//Decoder
+for l=1:n-k
+ temp_dec(:,l)=Recd_vector'.*HT(:,l);
+end
+syndrome=zeros(1,3);
+for l=1:n
+ syndrome=bitxor(syndrome,temp_dec(l,:));
+end
+disp(syndrome);
+ind=vectorfind(syndrome_table,syndrome,'r');
+error_pattern=zeros(1,7);
+if ind~=1
+ error_pattern(ind-1)=1;
+end
+corrected_codeword=bitxor(Recd_vector,error_pattern);
+
+// Encode the given text using Shannon-Fano encoding and Huffman
+Coding
+//Data should have only alphabets of one word length (to be specified
+by th examiner)
+//Change the path in Line no. 12 of this function and line 24 of the
+function ShannonFano_Dict.sce
+clear;
+clc;
+ascii_data=[65:90,97:122];
+data="INSTITUTE";
+x=ascii(data);
+chdir('F:\UG\sem odd 2020-21\CS-II Lab\source_coding\source_coding');
+crnt_dir=pwd();
+for i=1:length(ascii_data)
+ p(i)=length(find(ascii_data(i)==x));
+end
+[pos]=find(p);
+prob1=p(pos)/length(x);
+symbs1=char(ascii_data(pos));
+[prob,k]=gsort(prob1);
+symb=strsplit(symbs1);
+exec(strcat([crnt_dir,'\ShannonFano_Dict.sce']));
+[shannonfano_code,length_shannon] = ShannonFano_Dict(prob');
+exec(strcat([crnt_dir,'\huffman.sce']));
+[huffman_code,length_huffman]=huffman(prob');
+// Find entropy of S
+entr=0;
+for i=1:length(prob)
+ entr=entr-prob(i)*log2(prob(i));
+end
+//Average Code Word Length with Shannon Fano encoder
+avglen_shannon=sum(length_shannon(:).*prob(:));
+// Code Efficiency
+eff_shannon=(entr/avglen_shannon)*100;
+//Average Code Word Length with Huffman encoder
+avglen_huffman=sum(length_huffman(:).*prob(:));
+// Code Efficiency
+eff_huffman=(entr/avglen_huffman)*100;
